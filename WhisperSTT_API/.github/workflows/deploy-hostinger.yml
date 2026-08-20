@@ -1,0 +1,75 @@
+name: Deploy to Hostinger VPS
+
+# Push-to-deploy: on every push to main (or manual run), SSH into the VPS,
+# pull this repo, and rebuild the Docker stack.
+#
+# Configure these repo secrets (Settings -> Secrets and variables -> Actions):
+#   HOSTINGER_SSH_HOST    VPS hostname or IP
+#   HOSTINGER_SSH_USER    SSH user (e.g. root)
+#   HOSTINGER_SSH_KEY     private SSH key with access to the VPS
+#   HOSTINGER_SSH_PORT    (optional) SSH port, defaults to 22
+#   HOSTINGER_REMOTE_DIR  (optional) checkout dir, defaults to /root/neuswhisper
+#
+# If HOSTINGER_SSH_HOST is not set, the job is skipped (no-op).
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-hostinger
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check deploy secrets
+        id: gate
+        run: |
+          if [ -n "${{ secrets.HOSTINGER_SSH_HOST }}" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::HOSTINGER_SSH_HOST secret not set — skipping deploy."
+          fi
+
+      - name: Deploy over SSH
+        if: steps.gate.outputs.enabled == 'true'
+        env:
+          SSH_HOST: ${{ secrets.HOSTINGER_SSH_HOST }}
+          SSH_USER: ${{ secrets.HOSTINGER_SSH_USER }}
+          SSH_PORT: ${{ secrets.HOSTINGER_SSH_PORT }}
+          SSH_KEY: ${{ secrets.HOSTINGER_SSH_KEY }}
+          REMOTE_DIR: ${{ secrets.HOSTINGER_REMOTE_DIR }}
+          REPO_URL: ${{ github.server_url }}/${{ github.repository }}.git
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          PORT="${SSH_PORT:-22}"
+          DIR="${REMOTE_DIR:-/root/neuswhisper}"
+
+          mkdir -p ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          ssh-keyscan -p "$PORT" -H "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+
+          ssh -i ~/.ssh/id_deploy -p "$PORT" "${SSH_USER}@${SSH_HOST}" bash -s <<EOF
+          set -e
+          if ! command -v docker >/dev/null 2>&1; then
+            echo 'Docker not found on VPS. Install Docker first.' >&2
+            exit 1
+          fi
+          if [ -d '${DIR}/.git' ]; then
+            cd '${DIR}'
+            git fetch --depth 1 origin '${BRANCH}'
+            git checkout '${BRANCH}'
+            git reset --hard 'origin/${BRANCH}'
+          else
+            git clone --branch '${BRANCH}' '${REPO_URL}' '${DIR}'
+            cd '${DIR}'
+          fi
+          docker compose -f compose.hostinger.yaml up -d --build
+          docker compose -f compose.hostinger.yaml ps
+          EOF

@@ -1,0 +1,22 @@
+# Local secrets / env overrides
+.env
+.env.*
+config.local.env
+deploy.hostinger.env
+
+# whisper.cpp clone + native build output
+whisper.cpp/
+
+# Model weights (downloaded by setup scripts / whisper container on first boot)
+models/*.bin
+models/*.mlmodel
+models/*.mlmodelc
+
+# Runtime uploads, locks, logs
+runtime/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

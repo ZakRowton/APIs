@@ -1,0 +1,14 @@
+[Unit]
+Description=NeusWhisper whisper-server
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/neuswhisper
+EnvironmentFile=-/opt/neuswhisper/config.local.env
+ExecStart=/opt/neuswhisper/whisper.cpp/build/bin/whisper-server --host 127.0.0.1 --port 8081 -m /opt/neuswhisper/models/ggml-base.en.bin --convert
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

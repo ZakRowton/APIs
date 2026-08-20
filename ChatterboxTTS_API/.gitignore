@@ -1,0 +1,10 @@
+.env
+config.php
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+*.wav
+.DS_Store
+Thumbs.db

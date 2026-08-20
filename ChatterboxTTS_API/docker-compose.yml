@@ -1,0 +1,29 @@
+services:
+  kokoro-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: kokoro-api
+    restart: unless-stopped
+    ports:
+      - "${API_PORT:-4123}:4123"
+    environment:
+      KOKORO_HOST: "0.0.0.0"
+      KOKORO_PORT: "4123"
+      KOKORO_DEFAULT_VOICE: "${KOKORO_DEFAULT_VOICE:-af_heart}"
+      WARMUP_ON_START: "${WARMUP_ON_START:-1}"
+      API_KEY: "${API_KEY:-}"
+      CORS_ORIGINS: "${CORS_ORIGINS:-*}"
+      TQDM_DISABLE: "1"
+    volumes:
+      - kokoro_cache:/home/appuser/.kokoro
+    mem_limit: ${MEMORY_LIMIT:-2g}
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:4123/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+volumes:
+  kokoro_cache:

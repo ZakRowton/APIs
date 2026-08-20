@@ -1,0 +1,48 @@
+# Hostinger VPS Docker stack — PHP API + whisper-server (auto-restart on boot).
+#
+# Deploy from GitHub on the VPS:
+#   git clone https://github.com/ZakRowton/NeusWhisper.git
+#   cd NeusWhisper
+#   docker compose -f compose.hostinger.yaml up -d --build
+#
+# Zero config needed. To override the port / API key / model, create a .env file
+# in this directory (Docker Compose auto-loads it) — see README "Deploy from GitHub".
+# Requires a Hostinger VPS with Docker (not shared PHP-only hosting).
+
+name: neuswhisper
+
+services:
+  whisper:
+    build:
+      context: .
+      dockerfile: docker/whisper.Dockerfile
+    container_name: neuswhisper-whisper
+    volumes:
+      - ./models:/models
+    environment:
+      WHISPER_MODEL_PATH: /models/${NEUS_WHISPER_MODEL:-ggml-base.en.bin}
+      WHISPER_SERVER_HOST: 0.0.0.0
+      WHISPER_SERVER_PORT: "8081"
+    expose:
+      - "8081"
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: neuswhisper-web
+    ports:
+      - "${NEUS_WHISPER_HTTP_PORT:-8934}:8080"
+    environment:
+      WHISPER_SERVER_HOST: whisper
+      WHISPER_SERVER_PORT: "8081"
+      WHISPER_SERVER_INFERENCE_PATH: /inference
+      NEUS_WHISPER_AUTO_START: "0"
+      NEUS_WHISPER_API_KEY: "${NEUS_WHISPER_API_KEY:-}"
+      NEUS_WHISPER_MAX_UPLOAD_BYTES: "${NEUS_WHISPER_MAX_UPLOAD_BYTES:-26214400}"
+    # Start ordering only — the web entrypoint polls whisper-server, and the PHP
+    # API degrades gracefully until the model finishes downloading on first boot.
+    depends_on:
+      - whisper
+    restart: unless-stopped

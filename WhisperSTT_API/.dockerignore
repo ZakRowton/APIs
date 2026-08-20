@@ -1,0 +1,13 @@
+.git/
+.github/
+whisper.cpp/
+models/
+runtime/
+*.exe
+*.dll
+*.pdb
+.env
+.env.*
+config.local.env
+deploy.hostinger.env
+server.mjs

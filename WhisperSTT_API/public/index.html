@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NeusWhisper</title>
+  <style>
+    :root { color-scheme: dark; font-family: system-ui, sans-serif; }
+    body { margin: 0; background: #0b0d12; color: #e8ecf4; }
+    main { max-width: 720px; margin: 0 auto; padding: 2rem 1rem 3rem; }
+    h1 { font-size: 1.35rem; margin: 0 0 0.35rem; }
+    p { color: #9aa3b5; line-height: 1.5; }
+    .panel { margin-top: 1.25rem; padding: 1rem; border: 1px solid rgba(255,255,255,.08); border-radius: 12px; background: rgba(255,255,255,.03); }
+    label { display: block; font-size: 0.85rem; margin-bottom: 0.35rem; color: #c5ccda; }
+    input[type=file], input[type=text], select { width: 100%; margin-bottom: 0.85rem; }
+    button { border: 0; border-radius: 10px; padding: 0.65rem 1rem; background: #4f8fd9; color: #fff; font-weight: 600; cursor: pointer; }
+    button:disabled { opacity: 0.5; cursor: wait; }
+    pre { white-space: pre-wrap; word-break: break-word; background: #05070b; border-radius: 10px; padding: 0.85rem; min-height: 4rem; }
+    .status { font-size: 0.85rem; margin-top: 0.75rem; }
+    .status.ok { color: #7dcea0; }
+    .status.bad { color: #f1948a; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>NeusWhisper</h1>
+    <p>Local speech-to-text via <a href="https://github.com/ggml-org/whisper.cpp" target="_blank" rel="noreferrer">whisper.cpp</a>.</p>
+
+    <div class="panel">
+      <div id="health" class="status">Checking service…</div>
+    </div>
+
+    <div class="panel">
+      <label for="file">Audio file</label>
+      <input id="file" type="file" accept="audio/*,video/webm" />
+
+      <label for="language">Language (optional, e.g. en or auto)</label>
+      <input id="language" type="text" placeholder="en" />
+
+      <button id="submit" type="button">Transcribe</button>
+      <p id="message" class="status"></p>
+      <pre id="output">Transcription will appear here.</pre>
+    </div>
+  </main>
+  <script src="./js/app.js"></script>
+</body>
+</html>
