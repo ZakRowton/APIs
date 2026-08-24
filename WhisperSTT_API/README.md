@@ -1,4 +1,4 @@
-# NeusWhisper
+# Whisper Speeach To Text API
 
 Local speech-to-text API for NEUS development. Wraps [whisper.cpp](https://github.com/ggml-org/whisper.cpp) with a PHP JSON endpoint and a small JavaScript test page.
 
