@@ -1,6 +1,6 @@
 # Whisper Speech To Text API
 
-Local speech-to-text API for NEUS development. Wraps [whisper.cpp](https://github.com/ggml-org/whisper.cpp) with a PHP JSON endpoint and a small JavaScript test page.
+Local speech-to-text API. Wraps [whisper.cpp](https://github.com/ggml-org/whisper.cpp) with a PHP JSON endpoint and a small JavaScript test page.
 
 Runs locally on Windows/XAMPP for development, or as a two-container Docker stack on a Hostinger VPS (deployed straight from GitHub — see [Hostinger VPS deploy](#hostinger-vps-deploy)).
 
@@ -60,7 +60,7 @@ Copy `config.example.env` → `config.local.env` if setup did not create it.
 }
 ```
 
-Optional auth: set `NEUS_WHISPER_API_KEY` in `config.local.env`, send header `X-Api-Key`.
+Optional auth: set `WHISPER_API_KEY` in `config.local.env`, send header `X-Api-Key`.
 
 ### `GET /api/health.php`
 
@@ -69,7 +69,7 @@ Returns model path, whisper-server reachability, and whisper-cli path.
 ## Example (curl)
 
 ```bash
-curl -X POST "http://localhost/Repos/_workspace/NeusWhisper/api/transcribe.php" \
+curl -X POST "http://localhost/Whisper/api/transcribe.php" \
   -F "file=@sample.wav" \
   -F "language=en"
 ```
@@ -78,7 +78,7 @@ curl -X POST "http://localhost/Repos/_workspace/NeusWhisper/api/transcribe.php" 
 
 Open in browser (XAMPP):
 
-`http://localhost/Repos/_workspace/NeusWhisper/public/`
+`http://localhost/Whisper/public/`
 
 Or run Node static server:
 
@@ -95,13 +95,13 @@ node server.mjs --port 8787
 
 - Bind whisper-server to `127.0.0.1` only (default).
 - Do not expose this stack to the public internet without auth and sandboxing.
-- Upload size capped by `NEUS_WHISPER_MAX_UPLOAD_BYTES` (default 25 MB).
+- Upload size capped by `WHISPER_MAX_UPLOAD_BYTES` (default 25 MB).
 
 ## Auto-start whisper-server
 
 Set `NEUS_WHISPER_AUTO_START=1` in `config.local.env` (default on Windows/XAMPP). The PHP API calls `WhisperServerSupervisor` on health/transcribe requests and runs `scripts/start-server.ps1` or `start-server.sh` if the server is down.
 
-On **Hostinger Docker**, set `NEUS_WHISPER_AUTO_START=0` — `compose.hostinger.yaml` runs whisper-server with `restart: unless-stopped`.
+On **Hostinger Docker**, set `WHISPER_AUTO_START=0` — `compose.hostinger.yaml` runs whisper-server with `restart: unless-stopped`.
 
 ## Hostinger VPS deploy
 
@@ -117,7 +117,7 @@ Requires a **Hostinger VPS with Docker** (shared PHP-only hosting cannot run whi
 SSH into the VPS, then:
 
 ```bash
-git clone https://github.com/ZakRowton/NeusWhisper.git
+git clone https://github.com/ZakRowton/APIs/WhisperSTT_API/
 cd NeusWhisper
 docker compose -f compose.hostinger.yaml up -d --build
 ```
@@ -127,10 +127,10 @@ That's it — no config files needed. The stack auto-restarts on reboot (`restar
 **Optional overrides** — create a `.env` file in the repo root (Docker Compose auto-loads it):
 
 ```env
-NEUS_WHISPER_HTTP_PORT=8934
-NEUS_WHISPER_API_KEY=your-secret-key
-NEUS_WHISPER_MAX_UPLOAD_BYTES=26214400
-NEUS_WHISPER_MODEL=ggml-base.en.bin
+WHISPER_HTTP_PORT=8934
+WHISPER_API_KEY=your-secret-key
+WHISPER_MAX_UPLOAD_BYTES=26214400
+WHISPER_MODEL=ggml-base.en.bin
 ```
 
 ### Option B — push-to-deploy from GitHub Actions
@@ -151,7 +151,7 @@ Without `HOSTINGER_SSH_HOST`, the workflow is a no-op.
 
 ```powershell
 copy deploy.hostinger.env.example deploy.hostinger.env
-# edit HOSTINGER_SSH_* , HOSTINGER_REMOTE_DIR , NEUS_WHISPER_REPO_*
+# edit HOSTINGER_SSH_* , HOSTINGER_REMOTE_DIR , WHISPER_REPO_*
 powershell -ExecutionPolicy Bypass -File .\scripts\deploy-hostinger.ps1
 ```
 
@@ -174,8 +174,8 @@ This SSHes into the VPS, pulls the repo from GitHub, and runs `docker compose up
 
 ```bash
 ./scripts/setup-whisper.sh
-sudo cp systemd/neus-whisper-server.service /etc/systemd/system/
-sudo systemctl enable --now neus-whisper-server
+sudo cp systemd/whisper-server.service /etc/systemd/system/
+sudo systemctl enable --now whisper-server
 ```
 
 Point Apache at `public/` and keep `WHISPER_SERVER_HOST=127.0.0.1`.
