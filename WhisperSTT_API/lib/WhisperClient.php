@@ -85,13 +85,19 @@ final class WhisperClient
 
             $serverError = $viaServer['error'] ?? 'whisper-server request failed';
 
-            // If the error looks like a transient busy/refused condition, retry.
+            // Only retry transient failures (connection issues, timeouts).
+            // If the server responded with a non-transient error (e.g. "No
+            // transcription text" — the audio had no speech), don't retry.
+            $retryable = $viaServer['retryable'] ?? null;
+            if ($retryable === false) {
+                break; // definitive failure — don't retry
+            }
+
             $isTransient = (
                 str_contains($serverError, 'Connection refused') ||
                 str_contains($serverError, 'timed out') ||
                 str_contains($serverError, 'Empty reply') ||
                 str_contains($serverError, 'Connection reset') ||
-                str_contains($serverError, 'Could not resolve host') === false &&
                 str_contains($serverError, 'request failed')
             );
 
@@ -256,7 +262,7 @@ final class WhisperClient
         }
 
         if ($text === '') {
-            return ['ok' => false, 'error' => 'No transcription text in response.', 'raw' => $decoded];
+            return ['ok' => false, 'error' => 'No transcription text in response.', 'raw' => $decoded, 'retryable' => false];
         }
 
         return [

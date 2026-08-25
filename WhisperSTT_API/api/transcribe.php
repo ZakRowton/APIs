@@ -70,7 +70,8 @@ try {
         // 502 = upstream whisper-server failed, but the client sent valid audio.
         // Include retryable flag so the frontend can auto-retry.
         $payload = ['ok' => false, 'error' => $result['error'] ?? 'Transcription failed.'];
-        if (!empty($result['retryable'])) {
+        $retryable = $result['retryable'] ?? null;
+        if ($retryable === true) {
             $payload['retryable'] = true;
         }
         neus_whisper_json_response($payload, 502);
