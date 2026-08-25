@@ -66,6 +66,7 @@ final class WhisperClient
         // it's still processing the previous one, the connection is refused.
         // We retry a few times with a short backoff instead of failing 502.
         $serverError = null;
+        $lastRetryable = null;
         $maxAttempts = (int) (neus_whisper_env('NEUS_WHISPER_RETRY_ATTEMPTS', '3') ?? '3');
         $retryDelay  = (int) (neus_whisper_env('NEUS_WHISPER_RETRY_DELAY_MS', '500') ?? '500');
 
@@ -84,6 +85,7 @@ final class WhisperClient
             }
 
             $serverError = $viaServer['error'] ?? 'whisper-server request failed';
+            $lastRetryable = $viaServer['retryable'] ?? null;
 
             // Only retry transient failures (connection issues, timeouts).
             // If the server responded with a non-transient error (e.g. "No
@@ -108,10 +110,14 @@ final class WhisperClient
             break;
         }
 
-        // Fallback: local whisper-cli, which does require the model file on disk.
+        // Fallback: local whisper-cli, which requires the model file on disk.
         if (!is_file($this->modelPath)) {
             if ($serverError !== null) {
-                return ['ok' => false, 'error' => 'whisper-server error: ' . $serverError, 'retryable' => true];
+                // Carry the retryable flag from the server response.
+                // "No transcription text" (no speech) is NOT retryable; connection
+                // errors ARE retryable.
+                $retryable = $lastRetryable ?? true;
+                return ['ok' => false, 'error' => 'whisper-server error: ' . $serverError, 'retryable' => $retryable];
             }
             return [
                 'ok' => false,
