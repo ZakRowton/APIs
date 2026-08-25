@@ -49,7 +49,7 @@ final class WhisperClient
 
     /**
      * @param array<string, scalar|null> $options
-     * @return array{ok: bool, text?: string, segments?: mixed, source?: string, error?: string, raw?: mixed}
+     * @return array{ok: bool, text?: string, segments?: mixed, source?: string, error?: string, raw?: mixed, retryable?: bool}
      */
     public function transcribe(string $inputPath, array $options = []): array
     {
@@ -61,26 +61,57 @@ final class WhisperClient
             WhisperServerSupervisor::ensureRunning($this);
         }
 
-        // Preferred path: proxy to whisper-server. No local model file is needed
-        // here — in the Docker stack the model lives in the whisper container.
+        // Preferred path: proxy to whisper-server with retry-on-busy.
+        // The whisper-server is single-threaded — when a request arrives while
+        // it's still processing the previous one, the connection is refused.
+        // We retry a few times with a short backoff instead of failing 502.
         $serverError = null;
-        if ($this->isServerUp()) {
+        $maxAttempts = (int) (neus_whisper_env('NEUS_WHISPER_RETRY_ATTEMPTS', '3') ?? '3');
+        $retryDelay  = (int) (neus_whisper_env('NEUS_WHISPER_RETRY_DELAY_MS', '500') ?? '500');
+
+        for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
+            if (!$this->isServerUp() && $attempt > 1) {
+                // Only skip if the server is genuinely down, not just busy.
+                // On the first attempt we try anyway — the ping itself can fail
+                // when the server is mid-processing.
+                usleep($retryDelay * 1000);
+                continue;
+            }
+
             $viaServer = $this->transcribeViaServer($inputPath, $options);
             if ($viaServer['ok'] === true) {
                 return $viaServer;
             }
+
             $serverError = $viaServer['error'] ?? 'whisper-server request failed';
+
+            // If the error looks like a transient busy/refused condition, retry.
+            $isTransient = (
+                str_contains($serverError, 'Connection refused') ||
+                str_contains($serverError, 'timed out') ||
+                str_contains($serverError, 'Empty reply') ||
+                str_contains($serverError, 'Connection reset') ||
+                str_contains($serverError, 'Could not resolve host') === false &&
+                str_contains($serverError, 'request failed')
+            );
+
+            if ($isTransient && $attempt < $maxAttempts) {
+                usleep($retryDelay * 1000 * $attempt); // linear backoff
+                continue;
+            }
+            break;
         }
 
         // Fallback: local whisper-cli, which does require the model file on disk.
         if (!is_file($this->modelPath)) {
             if ($serverError !== null) {
-                return ['ok' => false, 'error' => 'whisper-server error: ' . $serverError];
+                return ['ok' => false, 'error' => 'whisper-server error: ' . $serverError, 'retryable' => true];
             }
             return [
                 'ok' => false,
                 'error' => 'whisper-server is not reachable yet (on first boot the model may still be '
                     . 'downloading). Check ' . $this->serverBaseUrl . ' and try again shortly.',
+                'retryable' => true,
             ];
         }
 
@@ -117,7 +148,7 @@ final class WhisperClient
             CURLOPT_POST => true,
             CURLOPT_POSTFIELDS => $post,
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_CONNECTTIMEOUT => 5,
+            CURLOPT_CONNECTTIMEOUT => 10,
             CURLOPT_TIMEOUT => 600,
         ]);
         $body = curl_exec($ch);

@@ -41,29 +41,44 @@ async function transcribe() {
   if (language) form.append('language', language);
 
   button.disabled = true;
-  message.textContent = 'Transcribing…';
-  message.className = 'status';
-  output.textContent = '';
 
-  try {
-    const res = await fetch(new URL('transcribe.php', apiBase), {
-      method: 'POST',
-      body: form,
-    });
-    const data = await res.json();
-    if (!res.ok || !data.ok) {
-      throw new Error(data.error || `HTTP ${res.status}`);
-    }
-    output.textContent = data.text || '(empty)';
-    message.textContent = `Done via ${data.source || 'unknown'}.`;
-    message.className = 'status ok';
-  } catch (err) {
+  const maxRetries = 2;
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    message.textContent = attempt === 0 ? 'Transcribing…' : `STT server busy, retrying (${attempt}/${maxRetries})…`;
+    message.className = 'status';
     output.textContent = '';
-    message.textContent = err?.message || String(err);
-    message.className = 'status bad';
-  } finally {
-    button.disabled = false;
+
+    try {
+      const res = await fetch(new URL('transcribe.php', apiBase), {
+        method: 'POST',
+        body: form,
+      });
+      const data = await res.json();
+
+      if (res.status === 502 && data.retryable && attempt < maxRetries) {
+        await new Promise(r => setTimeout(r, 800 * (attempt + 1)));
+        continue;
+      }
+
+      if (!res.ok || !data.ok) {
+        throw new Error(data.error || `HTTP ${res.status}`);
+      }
+
+      output.textContent = data.text || '(empty)';
+      message.textContent = `Done via ${data.source || 'unknown'}.`;
+      message.className = 'status ok';
+      return;
+    } catch (err) {
+      if (attempt < maxRetries && (err?.message || '').includes('Failed to fetch')) {
+        await new Promise(r => setTimeout(r, 800 * (attempt + 1)));
+        continue;
+      }
+      output.textContent = '';
+      message.textContent = err?.message || String(err);
+      message.className = 'status bad';
+    }
   }
+  button.disabled = false;
 }
 
 document.getElementById('submit').addEventListener('click', transcribe);

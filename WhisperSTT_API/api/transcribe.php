@@ -67,7 +67,13 @@ try {
     WhisperServerSupervisor::ensureRunning($client);
     $result = $client->transcribe($storedPath, $options);
     if ($result['ok'] !== true) {
-        neus_whisper_json_response($result, 502);
+        // 502 = upstream whisper-server failed, but the client sent valid audio.
+        // Include retryable flag so the frontend can auto-retry.
+        $payload = ['ok' => false, 'error' => $result['error'] ?? 'Transcription failed.'];
+        if (!empty($result['retryable'])) {
+            $payload['retryable'] = true;
+        }
+        neus_whisper_json_response($payload, 502);
     }
     neus_whisper_json_response([
         'ok' => true,
