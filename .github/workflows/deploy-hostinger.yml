@@ -1,0 +1,49 @@
+name: Deploy to Hostinger VPS
+
+# Redeploys the WhisperSTT_API Docker stack on the Hostinger VPS whenever
+# main changes. Requires repo secrets (Settings → Secrets → Actions):
+#   HOSTINGER_SSH_HOST  — VPS hostname or IP
+#   HOSTINGER_SSH_USER  — SSH user (e.g. root)
+#   HOSTINGER_SSH_KEY   — private SSH key with VPS access
+#   HOSTINGER_SSH_PORT  — optional, default 22
+#   HOSTINGER_REMOTE_DIR — optional, default /root/neuswhisper
+# Without HOSTINGER_SSH_HOST this workflow is a no-op.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      HOST: ${{ secrets.HOSTINGER_SSH_HOST }}
+      SSH_USER: ${{ secrets.HOSTINGER_SSH_USER }}
+      SSH_KEY: ${{ secrets.HOSTINGER_SSH_KEY }}
+      SSH_PORT: ${{ secrets.HOSTINGER_SSH_PORT }}
+      REMOTE_DIR: ${{ secrets.HOSTINGER_REMOTE_DIR }}
+    steps:
+      - name: Check deploy secrets
+        id: check
+        run: |
+          if [ -z "$HOST" ] || [ -z "$SSH_USER" ] || [ -z "$SSH_KEY" ]; then
+            echo "HOSTINGER_SSH_* secrets not configured — skipping deploy."
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Start ssh-agent
+        if: steps.check.outputs.configured == 'true'
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.HOSTINGER_SSH_KEY }}
+
+      - name: Pull and rebuild on VPS
+        if: steps.check.outputs.configured == 'true'
+        run: |
+          PORT="${SSH_PORT:-22}"
+          DIR="${REMOTE_DIR:-/root/neuswhisper}"
+          ssh -o StrictHostKeyChecking=accept-new -p "$PORT" "$SSH_USER@$HOST" \
+            "set -e; cd '$DIR' && git fetch origin main && git reset --hard origin/main && cd WhisperSTT_API && docker compose -f compose.hostinger.yaml up -d --build"

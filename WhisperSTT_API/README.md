@@ -117,20 +117,20 @@ Requires a **Hostinger VPS with Docker** (shared PHP-only hosting cannot run whi
 SSH into the VPS, then:
 
 ```bash
-git clone https://github.com/ZakRowton/APIs/WhisperSTT_API/
-cd NeusWhisper
+git clone https://github.com/ZakRowton/APIs.git
+cd APIs/WhisperSTT_API
 docker compose -f compose.hostinger.yaml up -d --build
 ```
 
 That's it — no config files needed. The stack auto-restarts on reboot (`restart: unless-stopped`). To update later: `git pull && docker compose -f compose.hostinger.yaml up -d --build`.
 
-**Optional overrides** — create a `.env` file in the repo root (Docker Compose auto-loads it):
+**Optional overrides** — create a `.env` file next to `compose.hostinger.yaml` (Docker Compose auto-loads it):
 
 ```env
-WHISPER_HTTP_PORT=8934
-WHISPER_API_KEY=your-secret-key
-WHISPER_MAX_UPLOAD_BYTES=26214400
-WHISPER_MODEL=ggml-base.en.bin
+NEUS_WHISPER_HTTP_PORT=8934
+NEUS_WHISPER_API_KEY=your-secret-key
+NEUS_WHISPER_MAX_UPLOAD_BYTES=26214400
+NEUS_WHISPER_MODEL=ggml-base.en.bin
 ```
 
 ### Option B — push-to-deploy from GitHub Actions

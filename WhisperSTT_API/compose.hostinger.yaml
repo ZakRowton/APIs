@@ -1,8 +1,8 @@
 # Hostinger VPS Docker stack — PHP API + whisper-server (auto-restart on boot).
 #
 # Deploy from GitHub on the VPS:
-#   git clone https://github.com/ZakRowton/NeusWhisper.git
-#   cd NeusWhisper
+#   git clone https://github.com/ZakRowton/APIs.git
+#   cd APIs/WhisperSTT_API
 #   docker compose -f compose.hostinger.yaml up -d --build
 #
 # Zero config needed. To override the port / API key / model, create a .env file
