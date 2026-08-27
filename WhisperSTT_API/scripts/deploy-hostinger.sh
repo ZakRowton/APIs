@@ -20,7 +20,7 @@ set +a
 : "${HOSTINGER_SSH_USER:?HOSTINGER_SSH_USER required}"
 HOSTINGER_SSH_PORT="${HOSTINGER_SSH_PORT:-22}"
 HOSTINGER_REMOTE_DIR="${HOSTINGER_REMOTE_DIR:-/root/neuswhisper}"
-NEUS_WHISPER_REPO_URL="${NEUS_WHISPER_REPO_URL:-https://github.com/ZakRowton/NeusWhisper.git}"
+NEUS_WHISPER_REPO_URL="${NEUS_WHISPER_REPO_URL:-https://github.com/ZakRowton/APIs.git}"
 NEUS_WHISPER_REPO_BRANCH="${NEUS_WHISPER_REPO_BRANCH:-main}"
 
 SSH="ssh -p ${HOSTINGER_SSH_PORT} ${HOSTINGER_SSH_USER}@${HOSTINGER_SSH_HOST}"
@@ -41,6 +41,7 @@ else
   git clone --branch '${NEUS_WHISPER_REPO_BRANCH}' '${NEUS_WHISPER_REPO_URL}' '${HOSTINGER_REMOTE_DIR}'
   cd '${HOSTINGER_REMOTE_DIR}'
 fi
+cd WhisperSTT_API
 docker compose -f compose.hostinger.yaml up -d --build
 docker compose -f compose.hostinger.yaml ps
 EOF

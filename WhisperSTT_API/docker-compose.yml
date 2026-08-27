@@ -1,0 +1,45 @@
+# Hostinger Docker Manager — paste this raw URL into "Compose from URL":
+#   https://raw.githubusercontent.com/ZakRowton/APIs/main/WhisperSTT_API/docker-compose.yml
+#
+# Hostinger only downloads this YAML (no local checkout), so build contexts
+# point at the public GitHub repo. Project name is set in the Hostinger UI.
+#
+# SSH / local after clone (faster, uses local files instead):
+#   cd APIs/WhisperSTT_API && docker compose -f compose.hostinger.yaml up -d --build
+
+services:
+  whisper:
+    build:
+      context: https://github.com/ZakRowton/APIs.git#main:WhisperSTT_API
+      dockerfile: docker/whisper.Dockerfile
+    container_name: neuswhisper-whisper
+    volumes:
+      - whisper_models:/models
+    environment:
+      WHISPER_MODEL_PATH: /models/ggml-base.en.bin
+      WHISPER_SERVER_HOST: 0.0.0.0
+      WHISPER_SERVER_PORT: "8081"
+    expose:
+      - "8081"
+    restart: unless-stopped
+
+  web:
+    build:
+      context: https://github.com/ZakRowton/APIs.git#main:WhisperSTT_API
+      dockerfile: docker/Dockerfile
+    container_name: neuswhisper-web
+    ports:
+      - "8934:8080"
+    environment:
+      WHISPER_SERVER_HOST: whisper
+      WHISPER_SERVER_PORT: "8081"
+      WHISPER_SERVER_INFERENCE_PATH: /inference
+      NEUS_WHISPER_AUTO_START: "0"
+      NEUS_WHISPER_API_KEY: ""
+      NEUS_WHISPER_MAX_UPLOAD_BYTES: "26214400"
+    depends_on:
+      - whisper
+    restart: unless-stopped
+
+volumes:
+  whisper_models:

@@ -40,7 +40,7 @@ $hostName = $cfg['HOSTINGER_SSH_HOST']
 $user = $cfg['HOSTINGER_SSH_USER']
 $port = if ($cfg['HOSTINGER_SSH_PORT']) { $cfg['HOSTINGER_SSH_PORT'] } else { '22' }
 $remote = if ($cfg['HOSTINGER_REMOTE_DIR']) { $cfg['HOSTINGER_REMOTE_DIR'] } else { '/root/neuswhisper' }
-$repoUrl = if ($cfg['NEUS_WHISPER_REPO_URL']) { $cfg['NEUS_WHISPER_REPO_URL'] } else { 'https://github.com/ZakRowton/NeusWhisper.git' }
+$repoUrl = if ($cfg['NEUS_WHISPER_REPO_URL']) { $cfg['NEUS_WHISPER_REPO_URL'] } else { 'https://github.com/ZakRowton/APIs.git' }
 $branch = if ($cfg['NEUS_WHISPER_REPO_BRANCH']) { $cfg['NEUS_WHISPER_REPO_BRANCH'] } else { 'main' }
 
 if (-not $hostName -or -not $user) {
@@ -65,6 +65,7 @@ else
   git clone --branch '$branch' '$repoUrl' '$remote'
   cd '$remote'
 fi
+cd WhisperSTT_API
 docker compose -f compose.hostinger.yaml up -d --build
 docker compose -f compose.hostinger.yaml ps
 "@

@@ -46,4 +46,4 @@ jobs:
           PORT="${SSH_PORT:-22}"
           DIR="${REMOTE_DIR:-/root/neuswhisper}"
           ssh -o StrictHostKeyChecking=accept-new -p "$PORT" "$SSH_USER@$HOST" \
-            "set -e; cd '$DIR' && git fetch origin main && git reset --hard origin/main && cd WhisperSTT_API && docker compose -f compose.hostinger.yaml up -d --build"
+            "set -e; if [ -d '$DIR/.git' ]; then cd '$DIR'; git fetch origin main; git reset --hard origin/main; else git clone --branch main https://github.com/ZakRowton/APIs.git '$DIR'; cd '$DIR'; fi; cd WhisperSTT_API && docker compose -f compose.hostinger.yaml up -d --build && docker compose -f compose.hostinger.yaml ps"

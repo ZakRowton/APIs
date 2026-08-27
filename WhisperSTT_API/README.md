@@ -105,16 +105,26 @@ On **Hostinger Docker**, set `WHISPER_AUTO_START=0` — `compose.hostinger.yaml`
 
 ## Hostinger VPS deploy
 
-Requires a **Hostinger VPS with Docker** (shared PHP-only hosting cannot run whisper.cpp). The whisper model (~148 MB for `base.en`) downloads automatically on first boot and persists in the `models/` volume.
+Requires a **Hostinger VPS with Docker** (shared PHP-only hosting cannot run whisper.cpp). The whisper model (~148 MB for `base.en`) downloads automatically on first boot and persists in a Docker volume.
 
 | Service | Role |
 |---------|------|
 | `whisper` | Thin layer over `ghcr.io/ggml-org/whisper.cpp:main` that downloads the model on first boot and runs whisper-server |
-| `web` | PHP Apache on port **8934** (override via `.env`) |
+| `web` | PHP Apache on port **8934** |
 
-### Option A — deploy from GitHub directly on the VPS
+### Option A — Hostinger Docker Manager (Compose from URL)
 
-SSH into the VPS, then:
+In hPanel → VPS → Docker Manager → **Compose from URL**, paste:
+
+```text
+https://raw.githubusercontent.com/ZakRowton/APIs/main/WhisperSTT_API/docker-compose.yml
+```
+
+Project name example: `neuswhisper`. Port **8934** is published. First boot builds from GitHub and downloads the model (several minutes).
+
+If a prior deploy failed with a bad GHCR credential, delete it under Docker Manager → Credentials, then retry.
+
+### Option B — deploy from GitHub directly on the VPS (SSH)
 
 ```bash
 git clone https://github.com/ZakRowton/APIs.git
@@ -133,7 +143,7 @@ NEUS_WHISPER_MAX_UPLOAD_BYTES=26214400
 NEUS_WHISPER_MODEL=ggml-base.en.bin
 ```
 
-### Option B — push-to-deploy from GitHub Actions
+### Option C — push-to-deploy from GitHub Actions
 
 `.github/workflows/deploy-hostinger.yml` redeploys on every push to `main`. Add these repo secrets (**Settings → Secrets and variables → Actions**):
 
@@ -147,11 +157,11 @@ NEUS_WHISPER_MODEL=ggml-base.en.bin
 
 Without `HOSTINGER_SSH_HOST`, the workflow is a no-op.
 
-### Option C — deploy from your machine
+### Option D — deploy from your machine
 
 ```powershell
 copy deploy.hostinger.env.example deploy.hostinger.env
-# edit HOSTINGER_SSH_* , HOSTINGER_REMOTE_DIR , WHISPER_REPO_*
+# edit HOSTINGER_SSH_* , HOSTINGER_REMOTE_DIR , NEUS_WHISPER_REPO_*
 powershell -ExecutionPolicy Bypass -File .\scripts\deploy-hostinger.ps1
 ```
 
