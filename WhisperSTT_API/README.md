@@ -114,15 +114,24 @@ Requires a **Hostinger VPS with Docker** (shared PHP-only hosting cannot run whi
 
 ### Option A — Hostinger Docker Manager (Compose from URL)
 
-In hPanel → VPS → Docker Manager → **Compose from URL**, paste:
+In hPanel → VPS → Docker Manager → **Compose from URL**, paste **exactly** one of:
 
 ```text
-https://raw.githubusercontent.com/ZakRowton/APIs/main/WhisperSTT_API/docker-compose.yml
+https://raw.githubusercontent.com/ZakRowton/APIs/main/docker-compose.yaml
 ```
 
-Project name example: `neuswhisper`. Port **8934** is published. First boot builds from GitHub and downloads the model (several minutes).
+or the repo URL (Hostinger resolves root `docker-compose.yaml`):
 
-If a prior deploy failed with a bad GHCR credential, delete it under Docker Manager → Credentials, then retry.
+```text
+https://github.com/ZakRowton/APIs
+```
+
+- Project name: `neuswhisper` (letters/numbers/dashes only — no spaces)
+- If an old failed project is stuck, **Delete** it in Projects, then Compose from URL again
+- If GHCR pulls fail, remove any GitHub Container Registry credential under Docker Manager → Credentials
+- First boot downloads the model and bootstraps PHP from GitHub (several minutes)
+
+This stack is **image-only** (no `build:`) because Hostinger Compose-from-URL does not ship Dockerfile build context.
 
 ### Option B — deploy from GitHub directly on the VPS (SSH)
 

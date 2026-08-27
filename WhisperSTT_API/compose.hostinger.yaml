@@ -1,12 +1,11 @@
-# Hostinger VPS Docker stack — PHP API + whisper-server (auto-restart on boot).
+# Hostinger VPS Docker stack — PHP API + whisper-server (local build after git clone).
 #
-# Prefer this file when you already cloned the repo on the VPS (local build context):
 #   git clone https://github.com/ZakRowton/APIs.git
 #   cd APIs/WhisperSTT_API
 #   docker compose -f compose.hostinger.yaml up -d --build
 #
-# Hostinger Docker Manager "Compose from URL" must use docker-compose.yml instead
-# (remote Git build context): see that file's header for the raw URL.
+# Hostinger Docker Manager "Compose from URL" must use the repo-root file instead:
+#   https://raw.githubusercontent.com/ZakRowton/APIs/main/docker-compose.yaml
 # Requires a Hostinger VPS with Docker (not shared PHP-only hosting).
 
 services:
