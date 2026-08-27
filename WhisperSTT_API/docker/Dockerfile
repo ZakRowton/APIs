@@ -9,6 +9,8 @@ RUN a2enmod rewrite headers \
   && rm -rf /var/lib/apt/lists/*
 
 COPY docker/apache-neuswhisper.conf /etc/apache2/sites-available/000-default.conf
+# Raise PHP upload/timeout limits so multi-minute voice notes aren't rejected
+COPY docker/php-neuswhisper.ini /usr/local/etc/php/conf.d/99-neuswhisper.ini
 
 WORKDIR /var/www/html
 
