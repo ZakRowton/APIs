@@ -110,7 +110,7 @@ Requires a **Hostinger VPS with Docker** (shared PHP-only hosting cannot run whi
 | Service | Role |
 |---------|------|
 | `whisper` | Thin layer over `ghcr.io/ggml-org/whisper.cpp:main` that downloads the model on first boot and runs whisper-server |
-| `web` | PHP Apache on port **8934** |
+| `api` | PHP STT API on port **8935** (override via `.env`) |
 
 ### Option A — Hostinger Docker Manager (Compose from URL)
 
@@ -125,7 +125,9 @@ https://github.com/ZakRowton/APIs
 - If GHCR pulls fail, remove any GitHub Container Registry credential under Docker Manager → Credentials
 - First boot downloads the model and bootstraps the API from GitHub (several minutes)
 
-Services: `whisper` (model server) + `api` (PHP STT API on port **8934**). There is no separate `web` service.
+Services: `whisper` (model server) + `api` (PHP STT API on port **8935**). No separate `web` service.
+
+**Port already in use?** Delete old Docker projects in Hostinger (they often hold 8934), or set `NEUS_WHISPER_HTTP_PORT=8936` in the repo-root `.env` or Hostinger Environment panel.
 
 ### Option B — deploy from GitHub directly on the VPS (SSH)
 
@@ -140,7 +142,7 @@ That's it — no config files needed. The stack auto-restarts on reboot (`restar
 **Optional overrides** — create a `.env` file next to `compose.hostinger.yaml` (Docker Compose auto-loads it):
 
 ```env
-NEUS_WHISPER_HTTP_PORT=8934
+NEUS_WHISPER_HTTP_PORT=8935
 NEUS_WHISPER_API_KEY=your-secret-key
 NEUS_WHISPER_MAX_UPLOAD_BYTES=26214400
 NEUS_WHISPER_MODEL=ggml-base.en.bin
@@ -179,9 +181,9 @@ This SSHes into the VPS, pulls the repo from GitHub, and runs `docker compose up
 
 ### URLs on VPS
 
-- Health: `http://YOUR_VPS:8934/api/health.php`
-- Transcribe: `POST http://YOUR_VPS:8934/api/transcribe.php`
-- Test UI: `http://YOUR_VPS:8934/test.php`
+- Health: `http://YOUR_VPS:8935/api/health.php`
+- Transcribe: `POST http://YOUR_VPS:8935/api/transcribe.php`
+- Test UI: `http://YOUR_VPS:8935/test.php`
 
 ### Bare-metal Linux (no Docker)
 

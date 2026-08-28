@@ -2,7 +2,8 @@
 #   https://github.com/ZakRowton/APIs
 # Project name in UI: WhisperSTT_API
 #
-# Zero manual env setup — defaults are baked into each service below.
+# Zero manual env setup — defaults in services + repo-root .env (NEUS_WHISPER_HTTP_PORT).
+# Port 8934 often stuck from old deploys; default is 8935. Delete stale Docker projects first.
 
 name: WhisperSTT_API
 
@@ -44,7 +45,7 @@ services:
     image: php:8.2-apache-bookworm
     container_name: WhisperSTT_API-api
     ports:
-      - "8934:8080"
+      - "${NEUS_WHISPER_HTTP_PORT:-8935}:8080"
     environment:
       WHISPER_SERVER_HOST: whisper
       WHISPER_SERVER_PORT: "8081"

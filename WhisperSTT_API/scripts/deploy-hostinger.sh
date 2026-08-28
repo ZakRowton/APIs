@@ -46,7 +46,7 @@ docker compose -f compose.hostinger.yaml up -d --build
 docker compose -f compose.hostinger.yaml ps
 EOF
 
-PORT="${NEUS_WHISPER_HTTP_PORT:-8934}"
+PORT="${NEUS_WHISPER_HTTP_PORT:-8935}"
 echo ""
 echo "Deploy complete: http://${HOSTINGER_SSH_HOST}:${PORT}/api/health.php"
 echo "Test UI:         http://${HOSTINGER_SSH_HOST}:${PORT}/test.php"

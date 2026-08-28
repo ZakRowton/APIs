@@ -73,7 +73,7 @@ docker compose -f compose.hostinger.yaml ps
 Write-Host "Deploying $repoUrl ($branch) to ${sshTarget}:${remote} ..."
 ssh @sshArgs $sshTarget $remoteCmd
 
-$httpPort = if ($cfg['NEUS_WHISPER_HTTP_PORT']) { $cfg['NEUS_WHISPER_HTTP_PORT'] } else { '8934' }
+$httpPort = if ($cfg['NEUS_WHISPER_HTTP_PORT']) { $cfg['NEUS_WHISPER_HTTP_PORT'] } else { '8935' }
 Write-Host ''
 Write-Host "Deploy complete. API: http://${hostName}:${httpPort}/api/health.php"
 Write-Host "Test UI: http://${hostName}:${httpPort}/test.php"
