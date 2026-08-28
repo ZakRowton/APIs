@@ -14,8 +14,8 @@ COPY docker/php-neuswhisper.ini /usr/local/etc/php/conf.d/99-neuswhisper.ini
 
 WORKDIR /var/www/html
 
-COPY docker/web-entrypoint.sh /usr/local/bin/neuswhisper-web-entrypoint.sh
-RUN chmod +x /usr/local/bin/neuswhisper-web-entrypoint.sh
+COPY docker/web-entrypoint.sh /usr/local/bin/whisperstt-api-entrypoint.sh
+RUN chmod +x /usr/local/bin/whisperstt-api-entrypoint.sh
 
 COPY api/ /var/www/html/api/
 COPY lib/ /var/www/html/lib/
@@ -31,5 +31,5 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
   CMD curl -sf http://127.0.0.1:8080/api/health.php || exit 1
 
-ENTRYPOINT ["/usr/local/bin/neuswhisper-web-entrypoint.sh"]
+ENTRYPOINT ["/usr/local/bin/whisperstt-api-entrypoint.sh"]
 CMD ["apache2-foreground"]

@@ -1,21 +1,23 @@
-# Hostinger VPS Docker stack — PHP API + whisper-server (local build after git clone).
+# Hostinger VPS Docker stack — WhisperSTT_API (local build after git clone).
 #
 #   git clone https://github.com/ZakRowton/APIs.git
 #   cd APIs/WhisperSTT_API
 #   docker compose -f compose.hostinger.yaml up -d --build
 #
-# Hostinger Docker Manager "Compose from URL" must use the repo-root file instead:
-#   https://raw.githubusercontent.com/ZakRowton/APIs/main/docker-compose.yaml
-# Requires a Hostinger VPS with Docker (not shared PHP-only hosting).
+# Hostinger Docker Manager "Compose from URL":
+#   https://github.com/ZakRowton/APIs
+#   Project name: WhisperSTT_API
+
+name: WhisperSTT_API
 
 services:
   whisper:
     build:
       context: .
       dockerfile: docker/whisper.Dockerfile
-    container_name: neuswhisper-whisper
+    container_name: WhisperSTT_API-whisper
     volumes:
-      - whisper_models:/models
+      - whisperstt_models:/models
     environment:
       WHISPER_MODEL_PATH: /models/${NEUS_WHISPER_MODEL:-ggml-base.en.bin}
       WHISPER_SERVER_HOST: 0.0.0.0
@@ -24,11 +26,11 @@ services:
       - "8081"
     restart: unless-stopped
 
-  web:
+  api:
     build:
       context: .
       dockerfile: docker/Dockerfile
-    container_name: neuswhisper-web
+    container_name: WhisperSTT_API-api
     ports:
       - "${NEUS_WHISPER_HTTP_PORT:-8934}:8080"
     environment:
@@ -43,4 +45,4 @@ services:
     restart: unless-stopped
 
 volumes:
-  whisper_models:
+  whisperstt_models:

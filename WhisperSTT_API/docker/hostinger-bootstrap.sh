@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
-# Hostinger Docker Manager bootstrap for the PHP web container.
+# Hostinger Docker Manager bootstrap for the WhisperSTT_API PHP container.
 # Runs inside php:8.2-apache-bookworm — no custom image / build context needed.
 set -euo pipefail
 
-MARKER=/var/www/html/.neuswhisper-bootstrapped
+MARKER=/var/www/html/.whisperstt-bootstrapped
 REPO_ARCHIVE_URL="${NEUS_WHISPER_ARCHIVE_URL:-https://github.com/ZakRowton/APIs/archive/refs/heads/main.tar.gz}"
 RAW_BASE="${NEUS_WHISPER_RAW_BASE:-https://raw.githubusercontent.com/ZakRowton/APIs/main/WhisperSTT_API}"
 
 export APACHE_DOCUMENT_ROOT=/var/www/html/public
 
 if [ ! -f "$MARKER" ]; then
-  echo "Bootstrapping NeusWhisper web from GitHub..."
+  echo "Bootstrapping WhisperSTT_API from GitHub..."
   apt-get update
   apt-get install -y --no-install-recommends libcurl4-openssl-dev curl ca-certificates tar
   docker-php-ext-install curl
@@ -31,7 +31,7 @@ if [ ! -f "$MARKER" ]; then
   curl -fsSL "$RAW_BASE/docker/apache-neuswhisper.conf" \
     -o /etc/apache2/sites-available/000-default.conf
   curl -fsSL "$RAW_BASE/docker/php-neuswhisper.ini" \
-    -o /usr/local/etc/php/conf.d/99-neuswhisper.ini
+    -o /usr/local/etc/php/conf.d/99-whisperstt.ini
 
   chown -R www-data:www-data /var/www/html
   rm -rf "$tmp"

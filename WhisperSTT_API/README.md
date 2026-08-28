@@ -114,24 +114,18 @@ Requires a **Hostinger VPS with Docker** (shared PHP-only hosting cannot run whi
 
 ### Option A — Hostinger Docker Manager (Compose from URL)
 
-In hPanel → VPS → Docker Manager → **Compose from URL**, paste **exactly** one of:
-
-```text
-https://raw.githubusercontent.com/ZakRowton/APIs/main/docker-compose.yaml
-```
-
-or the repo URL (Hostinger resolves root `docker-compose.yaml`):
+In hPanel → VPS → Docker Manager → **Compose from URL**, paste:
 
 ```text
 https://github.com/ZakRowton/APIs
 ```
 
-- Project name: `neuswhisper` (letters/numbers/dashes only — no spaces)
-- If an old failed project is stuck, **Delete** it in Projects, then Compose from URL again
+- Project name: **`WhisperSTT_API`** (must match; letters/numbers/underscores only — no spaces)
+- Delete any old `neuswhisper` / failed project first, then deploy fresh
 - If GHCR pulls fail, remove any GitHub Container Registry credential under Docker Manager → Credentials
-- First boot downloads the model and bootstraps PHP from GitHub (several minutes)
+- First boot downloads the model and bootstraps the API from GitHub (several minutes)
 
-This stack is **image-only** (no `build:`) because Hostinger Compose-from-URL does not ship Dockerfile build context.
+Services: `whisper` (model server) + `api` (PHP STT API on port **8934**). There is no separate `web` service.
 
 ### Option B — deploy from GitHub directly on the VPS (SSH)
 
@@ -162,7 +156,7 @@ NEUS_WHISPER_MODEL=ggml-base.en.bin
 | `HOSTINGER_SSH_USER` | SSH user (e.g. `root`) |
 | `HOSTINGER_SSH_KEY` | private SSH key with VPS access |
 | `HOSTINGER_SSH_PORT` | (optional) SSH port, default `22` |
-| `HOSTINGER_REMOTE_DIR` | (optional) checkout dir, default `/root/neuswhisper` |
+| `HOSTINGER_REMOTE_DIR` | (optional) checkout dir, default `/root/WhisperSTT_API` |
 
 Without `HOSTINGER_SSH_HOST`, the workflow is a no-op.
 

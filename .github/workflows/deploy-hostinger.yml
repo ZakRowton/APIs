@@ -6,7 +6,7 @@ name: Deploy to Hostinger VPS
 #   HOSTINGER_SSH_USER  — SSH user (e.g. root)
 #   HOSTINGER_SSH_KEY   — private SSH key with VPS access
 #   HOSTINGER_SSH_PORT  — optional, default 22
-#   HOSTINGER_REMOTE_DIR — optional, default /root/neuswhisper
+#   HOSTINGER_REMOTE_DIR — optional, default /root/WhisperSTT_API
 # Without HOSTINGER_SSH_HOST this workflow is a no-op.
 
 on:
@@ -44,6 +44,6 @@ jobs:
         if: steps.check.outputs.configured == 'true'
         run: |
           PORT="${SSH_PORT:-22}"
-          DIR="${REMOTE_DIR:-/root/neuswhisper}"
+          DIR="${REMOTE_DIR:-/root/WhisperSTT_API}"
           ssh -o StrictHostKeyChecking=accept-new -p "$PORT" "$SSH_USER@$HOST" \
             "set -e; if [ -d '$DIR/.git' ]; then cd '$DIR'; git fetch origin main; git reset --hard origin/main; else git clone --branch main https://github.com/ZakRowton/APIs.git '$DIR'; cd '$DIR'; fi; cd WhisperSTT_API && docker compose -f compose.hostinger.yaml up -d --build && docker compose -f compose.hostinger.yaml ps"
