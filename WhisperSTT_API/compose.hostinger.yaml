@@ -1,12 +1,9 @@
-# Hostinger VPS Docker stack — WhisperSTT_API (local build after git clone).
+# WhisperSTT_API — local/SSH build after git clone.
+# Hostinger Compose-from-URL uses repo-root docker-compose.yaml instead.
 #
-#   git clone https://github.com/ZakRowton/APIs.git
-#   cd APIs/WhisperSTT_API
-#   docker compose -f compose.hostinger.yaml up -d --build
+#   cd APIs/WhisperSTT_API && docker compose -f compose.hostinger.yaml up -d --build
 #
-# Hostinger Docker Manager "Compose from URL":
-#   https://github.com/ZakRowton/APIs
-#   Project name: WhisperSTT_API
+# Env auto-set below (optional sibling .env can override NEUS_WHISPER_*).
 
 name: WhisperSTT_API
 
@@ -37,9 +34,14 @@ services:
       WHISPER_SERVER_HOST: whisper
       WHISPER_SERVER_PORT: "8081"
       WHISPER_SERVER_INFERENCE_PATH: /inference
+      WHISPER_MODEL: models/ggml-base.en.bin
+      WHISPER_THREADS: "4"
+      FFMPEG: ffmpeg
       NEUS_WHISPER_AUTO_START: "0"
-      NEUS_WHISPER_API_KEY: "${NEUS_WHISPER_API_KEY:-}"
       NEUS_WHISPER_MAX_UPLOAD_BYTES: "${NEUS_WHISPER_MAX_UPLOAD_BYTES:-26214400}"
+      NEUS_WHISPER_RETRY_ATTEMPTS: "${NEUS_WHISPER_RETRY_ATTEMPTS:-3}"
+      NEUS_WHISPER_RETRY_DELAY_MS: "${NEUS_WHISPER_RETRY_DELAY_MS:-500}"
+      NEUS_WHISPER_API_KEY: "${NEUS_WHISPER_API_KEY:-}"
     depends_on:
       - whisper
     restart: unless-stopped
